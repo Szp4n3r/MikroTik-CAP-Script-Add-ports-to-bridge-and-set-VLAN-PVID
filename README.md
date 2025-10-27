@@ -1,20 +1,89 @@
 ## Script for MikroTik CAP devices controlled by CAPsMAN with "wifi-qcom-ac" drivers to add ports to bridge and set PVID.
 
-Scenariusz:
-cAP rozgłasza dwie (lub więcej) sieci dzieląc je na DWA vlany!
-Jedna na interfejsach fizycznych wifi (jako sieć firmowa) z vlan 100.
-Druga (i kolejne) na wirtualnych dynamicznych interfejsach wifi (jako sieć dla gości) z vlan 200.
+### Scenario:
+cAP broadcasts two (or more) networks, separate them into TWO VLANs!
+One on physical wifi interfaces (as a corporate network) with VLAN 100.
+The second (and subsequent) on virtual dynamic wifi interfaces (as a guest network) with vlan 200.
 
-Problem:
-Każda zmiana konfiguracji lub ultrata połączenia do CAPsMAN`a spowoduje dodanie nowych wirtualnych interfejsów (wifi3, wifi4, itd.) które nie bedą w bridge = nie będą tagowane.
+### Problem:
+Any configuration changes or loss of connection to CAPsMAN will result in the addition of new virtual interfaces (wifi3, wifi4, etc.) that will not be in the bridge = they will not be tagged = wifi not working..
 
-Rozwiązanie:
-Skrypt sprawdzający czy interfejs "wifi.." jest w bridge (z pominięciem wifi-2ghz i wifi-5ghz), jeżeli nie to go dodaje i przypisuje PVID. Dodatkowo usuwa wszystkie interfejsy nieistniejące z bridge. 
+### Solution:
+A script that checks whether the “wifi..” interface is in the bridge (excluding wifi-2ghz and wifi-5ghz), and if not, adds it and assigns a PVID. Additionally, it removes all non-existent interfaces from the bridge. 
 
-skrypt:
+## SCRIPT:
+```
+# WiFi bridge auto-fix - compatibility with RouterOS 7.20
+# BRIDGE NAME
+:local bridgeName "bridge-local"
+# VLAN FOR GUEST NETWORK
+:local targetPVID 100
+# BYPASS PORTS LIST (STATIC CONFIGURATION OF VLAN)
+:local staticPorts {"ether1";"ether2";"wifi-2ghz";"wifi-5ghz"}
 
-MY SETUP
-Configuration created based on instructions:
+# 1) Review bridge ports and remove invalid ones (but DO NOT touch staticPorts)
+:local bridgePorts [/interface bridge port find where bridge=$bridgeName]
+:foreach portID in=$bridgePorts do={
+    :local ifaceName [/interface bridge port get $portID interface]
+
+    # check membership in staticPorts
+    :local isStatic false
+    :foreach p in=$staticPorts do={
+        :if ($p = $ifaceName) do={ :set isStatic true }
+    }
+
+    # if it is a "holy" port - we do NOTHING
+    :if ($isStatic = false) do={
+
+        # check if an interface with this name exists at all
+        :local foundCount [:len [/interface find where name=$ifaceName]]
+        :if ($foundCount = 0) do={
+            :log warning ("[wifi_bridge_fix] Removing bridge port (missing iface): " . $ifaceName)
+            /interface bridge port remove $portID
+        } else={
+            # if it exists, check if it is disabled or not-running
+            :local disabled [/interface get $ifaceName disabled]
+            :local running [/interface get $ifaceName running]
+            :if ($disabled = true || $running = false) do={
+                :log warning ("[wifi_bridge_fix] Removing bridge port (inactive): " . $ifaceName)
+                /interface bridge port remove $portID
+            }
+        }
+    }
+}
+
+# 2) Go through all interfaces starting with "wifi" and add to bridge / set PVID (but DO NOT touch staticPorts)
+:local wifiIfs [/interface find where name~"^wifi"]
+:foreach iid in=$wifiIfs do={
+    :local ifaceName [/interface get $iid name]
+
+    # skip bypass ports
+    :local isStatic false
+    :foreach p in=$staticPorts do={
+        :if ($p = $ifaceName) do={ :set isStatic true }
+    }
+    :if ($isStatic = true) do={
+        :log warning ("[wifi_bridge_fix] Skip static wifi: " . $ifaceName)
+    } else={
+
+        # is it already a port in bridge?
+        :local existing [/interface bridge port find where bridge=$bridgeName and interface=$ifaceName]
+        :if ([:len $existing] = 0) do={
+            :log warning ("[wifi_bridge_fix] Adding to bridge: " . $ifaceName . " PVID=" . $targetPVID)
+            /interface bridge port add bridge=$bridgeName interface=$ifaceName pvid=$targetPVID
+        } else={
+            :local currentPVID [/interface bridge port get $existing pvid]
+            :if ($currentPVID != $targetPVID) do={
+                :log warning ("[wifi_bridge_fix] Fixing PVID for " . $ifaceName . " -> " . $targetPVID)
+                /interface bridge port set $existing pvid=$targetPVID
+            }
+        }
+    }
+}
+```
+
+## MY SETUP
+Configuration created based on instructions:</br>
 https://help.mikrotik.com/docs/spaces/ROS/pages/224559120/WiFi#WiFi-CAPsMAN%3A
 
 ### cAP controlled by external CAPsMAN:
