@@ -83,6 +83,7 @@ The script should be run periodically using a scheduler.
 }
 ```
 </br>
+
 ## MY SETUP
 Configuration created based on instructions:</br>
 https://help.mikrotik.com/docs/spaces/ROS/pages/224559120/WiFi#WiFi-CAPsMAN%3A
