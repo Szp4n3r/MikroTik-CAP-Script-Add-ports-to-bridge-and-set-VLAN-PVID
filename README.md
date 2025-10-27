@@ -1,23 +1,24 @@
 ## Script for MikroTik CAP devices controlled by CAPsMAN with "wifi-qcom-ac" drivers to add ports to bridge and set PVID.
 
 ### Scenario:
-cAP broadcasts two (or more) networks, separate them into TWO VLANs!
-One on physical wifi interfaces (as a corporate network) with VLAN 100.
-The second (and subsequent) on virtual dynamic wifi interfaces (as a guest network) with vlan 200.
+cAP broadcasts two (or more) networks, separated into **TWO VLANs**!</br>
+One on physical wifi interfaces (as a corporate network) with VLAN 100.</br>
+The second (and subsequent) on virtual dynamic wifi interfaces (as a guest network) with vlan 200.</br>
 
 ### Problem:
-Any configuration changes or loss of connection to CAPsMAN will result in the addition of new virtual interfaces (wifi3, wifi4, etc.) that will not be in the bridge = they will not be tagged = wifi not working..
+Any configuration changes or loss of connection to CAPsMAN will result in the addition of new virtual interfaces (wifi3, wifi4, etc.) that will not be in the bridge = they will not be tagged = wifi will not working..
 
 ### Solution:
-A script that checks whether the “wifi..” interface is in the bridge (excluding wifi-2ghz and wifi-5ghz), and if not, adds it and assigns a PVID. Additionally, it removes all non-existent interfaces from the bridge. 
+A script checks whether the “wifi..” interface is in the bridge (excluding wifi-2ghz and wifi-5ghz), and if not, adds it and assigns a PVID. Additionally, it removes all non-existent interfaces from the bridge. 
 
 ## SCRIPT:
+The script should be run periodically using a scheduler.
 ```
 # WiFi bridge auto-fix - compatibility with RouterOS 7.20
 # BRIDGE NAME
 :local bridgeName "bridge-local"
 # VLAN FOR GUEST NETWORK
-:local targetPVID 100
+:local targetPVID 200
 # BYPASS PORTS LIST (STATIC CONFIGURATION OF VLAN)
 :local staticPorts {"ether1";"ether2";"wifi-2ghz";"wifi-5ghz"}
 
@@ -81,7 +82,7 @@ A script that checks whether the “wifi..” interface is in the bridge (exclud
     }
 }
 ```
-
+</br>
 ## MY SETUP
 Configuration created based on instructions:</br>
 https://help.mikrotik.com/docs/spaces/ROS/pages/224559120/WiFi#WiFi-CAPsMAN%3A
@@ -105,6 +106,7 @@ add bridge=bridge-local tagged=ether1,ether2 vlan-ids=100
 add bridge=bridge-local tagged=ether1,ether2 vlan-ids=200
 /interface wifi cap
 set caps-man-addresses=[your-capsman-ip discovery-interfaces=none enabled=yes
+
 [... remember about your IP,Firewall,etc configuration of AP :) ...]
 ```
 ### MikroTik as CAPsMAN:
@@ -136,5 +138,6 @@ add bridge=bridge-local tagged=\
 set enabled=yes interfaces=[your-interface-for-mgmt-caps]
 /interface wifi provisioning
 [... add your provisioning template with action "create enable dynamic" ...]
-[... remember about your IP,Firewall,etc configuration of AP :) ...]
+
+[... remember about your IP,Firewall,etc configuration of Router :) ...]
 ```
