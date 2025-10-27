@@ -106,7 +106,7 @@ add bridge=bridge-local interface=wifi-5ghz pvid=100
 add bridge=bridge-local tagged=ether1,ether2 vlan-ids=100
 add bridge=bridge-local tagged=ether1,ether2 vlan-ids=200
 /interface wifi cap
-set caps-man-addresses=[your-capsman-ip discovery-interfaces=none enabled=yes
+set caps-man-addresses=[your-capsman-ip] discovery-interfaces=none enabled=yes
 
 [... remember about your IP,Firewall,etc configuration of AP :) ...]
 ```
