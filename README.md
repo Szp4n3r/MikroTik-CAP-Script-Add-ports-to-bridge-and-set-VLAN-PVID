@@ -116,6 +116,8 @@ set caps-man-addresses=[your-capsman-ip discovery-interfaces=none enabled=yes
 add name=bridge-local vlan-filtering=yes
 /interface ethernet
 set [ find default-name=ether5 ] name=ether5-cap
+/interface bridge port
+add bridge=bridge-local interface=ether5-cap
 /interface vlan
 add interface=bridge-local name=vlan100-wifi-team vlan-id=100
 add interface=bridge-local name=vlan200-wifi-guest vlan-id=200
