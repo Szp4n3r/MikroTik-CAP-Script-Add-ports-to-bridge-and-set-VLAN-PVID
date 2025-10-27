@@ -2,7 +2,7 @@
 # BRIDGE NAME
 :local bridgeName "bridge-local"
 # VLAN FOR GUEST NETWORK
-:local targetPVID 100
+:local targetPVID 200
 # BYPASS PORTS LIST (STATIC CONFIGURATION OF VLAN)
 :local staticPorts {"ether1";"ether2";"wifi-2ghz";"wifi-5ghz"}
 
@@ -64,4 +64,5 @@
             }
         }
     }
+
 }
