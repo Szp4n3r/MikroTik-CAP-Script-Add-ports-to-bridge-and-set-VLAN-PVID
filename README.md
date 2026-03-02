@@ -6,15 +6,17 @@ Two WiFi networks are created on the primary WiFi interfaces – the ones that "
 The remaining WiFi networks are created as virtual interfaces.
 
 ### Wi-Fi diagram - mirroring the Provisioning tab on CAPsMAN:
-cAP<br>
-├── wlan-2ghz ( band 2,4GHz - wifi HotSpot1 - vlan 10 )<br>
-│   ├── wifi1 ( band 2,4GHz - wifi HotSpot2 - vlan 20 )<br>
-│   ├── wifi2 ( band 2,4GHz - wifi HotSpot3 - vlan 30 )<br>
-│   └── wifi3 ( band 2,4GHz - wifi HotSpot4 - vlan 40 )<br>
-└── wlan-5ghz ( band 5GHz - wifi HotSpot1 - vlan 10 )<br>
-    ├── wifi4 ( band 5GHz - wifi HotSpot2 - vlan 20 )<br>
-    ├── wifi5 ( band 5GHz - wifi HotSpot3 - vlan 30 )<br>
+```
+cAP
+├── wlan-2ghz ( band 2,4GHz - wifi HotSpot1 - vlan 10 )
+│   ├── wifi1 ( band 2,4GHz - wifi HotSpot2 - vlan 20 )
+│   ├── wifi2 ( band 2,4GHz - wifi HotSpot3 - vlan 30 )
+│   └── wifi3 ( band 2,4GHz - wifi HotSpot4 - vlan 40 )
+└── wlan-5ghz ( band 5GHz - wifi HotSpot1 - vlan 10 )
+    ├── wifi4 ( band 5GHz - wifi HotSpot2 - vlan 20 )
+    ├── wifi5 ( band 5GHz - wifi HotSpot3 - vlan 30 )
     └── wifi6 ( band 5GHz - wifi HotSpot4 - vlan 40 )
+```
 
 ### Problem:
 Any configuration change or loss of connection to CAPsMAN will result in the addition of new virtual interfaces (wifi7, wifi8, etc.) that will not be in the bridge = they will not be marked = Wi-Fi will not work properly.
